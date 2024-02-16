@@ -1,0 +1,46 @@
+name: AB Tix check action
+
+on:
+  repository_dispatch:
+  workflow_dispatch: # This enables manual triggering of the workflow
+
+jobs:
+  check-tix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v2
+      - uses: nanasess/setup-chromedriver@v2
+      - run: |
+          export DISPLAY=:99
+          chromedriver --url-base=/wd/hub &
+          sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
+      - name: Run python script
+        run: |
+          python -m pip install -r requirements.txt
+          python ABtix.py
+        env:
+          ABT_PASSWORD: ${{ secrets.ABT_PASSWORD }}
+          ABT_TEL_CHAT_ID: ${{ secrets.ABT_TEL_CHAT_ID }}
+          ABT_TEL_TOKEN: ${{ secrets.ABT_TEL_TOKEN }}
+          ABT_USER_NAME: ${{ secrets.ABT_USER_NAME }}
+      - name: Configure Git
+        run: |
+          git config --global user.email "noreply@github.com"
+          git config --global user.name "GitHub Action"
+      - name: Commit CSV file
+        run: |
+          git add msgTimes.csv
+          if git diff --quiet --staged; then
+            echo "No changes to commit."
+          else
+            git commit -m "Update msgTimes.csv"
+            echo "RESULT=true" >> $GITHUB_ENV # Set the output result in the environment file
+          fi
+      - name: Push changes
+        if: env.RESULT == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
