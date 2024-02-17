@@ -81,8 +81,8 @@ for ticket_type in ticket_types:
 		print(f"{ticket_type} tickets available!")
 		available_ticket_types.append(ticket_type)
 	except:
-	# This exception means the specific ticket type was not found
-	print(f"No {ticket_type} tickets available.")
+		# This exception means the specific ticket type was not found
+		print(f"No {ticket_type} tickets available.")
 
 # Get time, and last telegram message ts
 current_time = int(time.time())
