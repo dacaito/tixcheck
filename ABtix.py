@@ -1,5 +1,8 @@
 import time
 import csv
+import requests
+import os
+import sys
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -7,8 +10,6 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import requests
-import os
 
 # Function to read the last times from the CSV file
 def read_last_times_from_csv(file_path):
@@ -43,6 +44,8 @@ chrome_options = Options()
 chrome_options.add_argument('--ignore-ssl-errors=yes')
 chrome_options.add_argument('--ignore-certificate-errors')
 chrome_options.add_argument("--headless")
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
 chrome_options.add_argument("--log-level=1")  # This sets the logging level to only show severe errors
 
 
@@ -103,14 +106,20 @@ if available_ticket_types:
 		ticket_list = ", ".join(available_ticket_types)
 		message = f"Tickets are available: {ticket_list}\nhttps://www.quicket.co.za/events/231484-afrikaburn-2024-creation/%23/resale"
 		print(message)  # Print message to console (optional)
-		send_telegram_message(abt_tel_token, abt_tel_chat_id, message)
+		result = send_telegram_message(abt_tel_token, abt_tel_chat_id, message)
+		print(result)
+		if not result.get('ok'):
+			sys.exit(1)
 		write_current_times_to_csv('msgTimes.csv', current_time, last_general_adm_message_time)
 else:
 	print("No specific tickets found.")
 	if current_time - last_message_time >= 3600: # more than 1h since last telegram message
 		message = "Nothing found, bot still running..."
 		print(message)  # Print message to console (optional)
-		send_telegram_message(abt_tel_token, abt_tel_chat_id, message)
+		result = send_telegram_message(abt_tel_token, abt_tel_chat_id, message)
+		print(result)
+		if not result.get('ok'):
+			sys.exit(1)
 		write_current_times_to_csv('msgTimes.csv', current_time, last_general_adm_message_time)	
 
 driver.quit
