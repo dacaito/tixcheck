@@ -91,12 +91,12 @@ last_message_time, last_general_adm_message_time = read_last_times_from_csv('msg
 if available_ticket_types:
 	send_message = False
 	
-	# Will send at most one message every 2min if it finds a general admission ticket, and every 15min if it found other tickets
+	# Will send at most one message every 2min if it finds a general admission ticket, and every 30min if it found other tickets
 	if "General Admission" in available_ticket_types and (current_time - last_general_adm_message_time) >= 120:
 		send_message = True
 		last_general_adm_message_time = current_time
 	
-	if "General Admission" not in available_ticket_types and (current_time - last_message_time) >= 900:
+	if "General Admission" not in available_ticket_types and (current_time - last_message_time) >= 1800:
 		send_message = True
 	
 	if send_message:
