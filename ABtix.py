@@ -82,13 +82,13 @@ for ticket_type in ticket_types:
 		available_ticket_types.append(ticket_type)
 	except:
 	# This exception means the specific ticket type was not found
-		print(f"No {ticket_type} tickets available.")
+	print(f"No {ticket_type} tickets available.")
+
+# Get time, and last telegram message ts
+current_time = int(time.time())
+last_message_time, last_general_adm_message_time = read_last_times_from_csv('msgTimes.csv')		
 
 if available_ticket_types:
-	# Get time, and last telegram message ts
-	current_time = int(time.time())
-	last_message_time, last_general_adm_message_time = read_last_times_from_csv('msgTimes.csv')
-	
 	send_message = False
 	
 	# Will send at most one message every 2min if it finds a general admission ticket, and every 15min if it found other tickets
@@ -107,5 +107,10 @@ if available_ticket_types:
 		write_current_times_to_csv('msgTimes.csv', current_time, last_general_adm_message_time)
 else:
 	print("No specific tickets found.")
+	if current_time - last_message_time >= 3600: # more than 1h since last telegram message
+		message = "Nothing found, bot still running..."
+		print(message)  # Print message to console (optional)
+		send_telegram_message(abt_tel_token, abt_tel_chat_id, message)
+		write_current_times_to_csv('msgTimes.csv', current_time, last_general_adm_message_time)	
 
 driver.quit
